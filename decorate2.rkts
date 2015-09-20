@@ -1,0 +1,30 @@
+#!/usr/local/bin/racket
+
+#lang at-exp racket
+(require racket/local)
+
+(define (compose-reverse . procs)
+  (apply compose (reverse procs)))
+(define replace
+  (local
+    [(define (r pattern insert)
+       (lambda (str) (regexp-replace* pattern str insert)))]
+     (compose-reverse
+       (r #px"&" "\\&amp;")
+       (r #px" " "\\&nbsp;")
+       (r #px"<" "\\&lt;")
+       (r #px">" "\\&gt;")
+       (r #px"^(.*)$" "\\1<br/>"))))
+(define (read/do proc)
+  (let ((str (read-line (current-input-port) 'any-one)))
+    (unless (eq? str eof) (proc str) (newline) (read/do proc))))
+
+; main
+
+(display @~a{<div class="code" style="font-family:monospace;">})
+(newline)
+
+(read/do (lambda (str) (display (replace str))))
+
+(display @~a{</div>})
+(newline)
