@@ -1,0 +1,35 @@
+#!/usr/local/bin/racket
+
+#lang at-exp racket
+
+;
+;   sub-routines
+;
+
+(define (replace str)
+
+  (define regexp-list
+    (reverse
+      (list (cons #px"&" "\\&amp;")
+            (cons #px" " "\\&nbsp;")
+            (cons #px"<" "\\&lt;")
+            (cons #px">" "\\&gt;")
+            (cons #px"^(.*)$" "\\1<br/>"))))
+
+  (foldr (lambda (r s) (regexp-replace* (car r) s (cdr r))) str regexp-list))
+  
+(define (read/do proc)
+  (let ((str (read-line (current-input-port) 'any-one)))
+    (unless (eq? str eof) (proc str) (newline) (read/do proc))))
+
+;
+;   main
+;
+
+(display @~a{<div class="code" style="font-family:monospace;">})
+(newline)
+
+(read/do (lambda (str) (display (replace str))))
+
+(display @~a{</div>})
+(newline)
